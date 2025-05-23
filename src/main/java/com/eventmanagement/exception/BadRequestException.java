@@ -1,3 +1,4 @@
+// src/main/java/com/eventmanagement/exception/BadRequestException.java
 package com.eventmanagement.exception;
 
 public class BadRequestException extends RuntimeException {

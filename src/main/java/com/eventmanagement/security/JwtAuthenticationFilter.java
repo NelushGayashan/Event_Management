@@ -7,36 +7,44 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.cache.Cache;
+import org.springframework.cache.CacheManager;
+import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.lang.NonNull;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.cache.Cache;
-import org.springframework.cache.CacheManager;
 
 import java.io.IOException;
-import java.util.UUID;
 
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
-    @Autowired
-    @Qualifier("tokenBlacklistCacheManager")
-    private CacheManager tokenBlacklistCacheManager;
-
     private static final Logger logger = LoggerFactory.getLogger(JwtAuthenticationFilter.class);
 
-    @Autowired
-    private JwtTokenProvider tokenProvider;
+    private final JwtTokenProvider tokenProvider;
+    private final UserDetailsService userDetailsService;
+    private final CacheManager tokenBlacklistCacheManager;
 
-    @Autowired
-    private UserDetailsService userDetailsService;
+    public JwtAuthenticationFilter(JwtTokenProvider tokenProvider,
+                                   UserDetailsService userDetailsService,
+                                   @Qualifier("tokenBlacklistCacheManager") CacheManager tokenBlacklistCacheManager) {
+        this.tokenProvider = tokenProvider;
+        this.userDetailsService = userDetailsService;
+        this.tokenBlacklistCacheManager = tokenBlacklistCacheManager;
+    }
+
+    public JwtAuthenticationFilter(JwtTokenProvider tokenProvider,
+                                   UserDetailsService userDetailsService) {
+        this.tokenProvider = tokenProvider;
+        this.userDetailsService = userDetailsService;
+        this.tokenBlacklistCacheManager = null;
+    }
 
     @Override
     protected void doFilterInternal(@NonNull HttpServletRequest request,
@@ -46,26 +54,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             String jwt = getJwtFromRequest(request);
 
             if (StringUtils.hasText(jwt)) {
-
-                Cache tokenBlacklistCache = tokenBlacklistCacheManager.getCache("tokenBlacklist");
-                Boolean isBlacklisted = tokenBlacklistCache != null ? tokenBlacklistCache.get(jwt, Boolean.class) : null;
-
-                if (Boolean.TRUE.equals(isBlacklisted)) {
-                    logger.warn("Blocked blacklisted JWT token");
-                    response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                    response.getWriter().write("Token has been invalidated (logged out).");
+                // ✅ Check token blacklist (if cache is available)
+                if (isTokenBlacklisted(jwt)) {
+                    handleBlacklistedToken(response);
                     return;
                 }
 
                 if (tokenProvider.validateToken(jwt)) {
-                    String userId = tokenProvider.getUserIdFromToken(jwt);
-
-                    UserDetails userDetails = userDetailsService.loadUserByUsername(userId);
-                    UsernamePasswordAuthenticationToken authentication =
-                            new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
-                    authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-
-                    SecurityContextHolder.getContext().setAuthentication(authentication);
+                    authenticateUser(jwt, request);
                 }
             }
         } catch (Exception ex) {
@@ -73,6 +69,41 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         }
 
         filterChain.doFilter(request, response);
+    }
+
+    private boolean isTokenBlacklisted(String jwt) {
+        if (tokenBlacklistCacheManager == null) {
+            return false;
+        }
+
+        try {
+            Cache tokenBlacklistCache = tokenBlacklistCacheManager.getCache("tokenBlacklist");
+            if (tokenBlacklistCache != null) {
+                Boolean isBlacklisted = tokenBlacklistCache.get(jwt, Boolean.class);
+                return Boolean.TRUE.equals(isBlacklisted);
+            }
+        } catch (Exception ex) {
+            logger.warn("Error checking token blacklist: {}", ex.getMessage());
+        }
+        return false;
+    }
+
+    private void handleBlacklistedToken(HttpServletResponse response) throws IOException {
+        logger.warn("Blocked blacklisted JWT token");
+        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+        response.setContentType("application/json");
+        response.getWriter().write("{\"error\":\"Token has been invalidated\",\"message\":\"Please login again\"}");
+    }
+
+    private void authenticateUser(String jwt, HttpServletRequest request) {
+        String userId = tokenProvider.getUserIdFromToken(jwt);
+        UserDetails userDetails = userDetailsService.loadUserByUsername(userId);
+
+        UsernamePasswordAuthenticationToken authentication =
+                new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+        authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+
+        SecurityContextHolder.getContext().setAuthentication(authentication);
     }
 
     private String getJwtFromRequest(HttpServletRequest request) {

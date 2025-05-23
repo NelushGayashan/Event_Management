@@ -1,3 +1,4 @@
+// src/main/java/com/eventmanagement/config/CacheConfig.java
 package com.eventmanagement.config;
 
 import com.github.benmanes.caffeine.cache.Caffeine;
@@ -6,6 +7,7 @@ import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.cache.caffeine.CaffeineCacheManager;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 
 import java.util.concurrent.TimeUnit;
 
@@ -14,7 +16,8 @@ import java.util.concurrent.TimeUnit;
 public class CacheConfig {
 
     @Bean
-    public CaffeineCacheManager cacheManager() {
+    @Primary
+    public CacheManager cacheManager() {
         CaffeineCacheManager cacheManager = new CaffeineCacheManager();
         cacheManager.setCaffeine(Caffeine.newBuilder()
                 .maximumSize(1000)
@@ -23,14 +26,13 @@ public class CacheConfig {
         return cacheManager;
     }
 
-    @Bean
-    public CaffeineCacheManager tokenBlacklistCacheManager() {
+    @Bean("tokenBlacklistCacheManager")
+    public CacheManager tokenBlacklistCacheManager() {
         CaffeineCacheManager cacheManager = new CaffeineCacheManager("tokenBlacklist");
         cacheManager.setCaffeine(Caffeine.newBuilder()
                 .maximumSize(10000)
-                .expireAfterWrite(30, TimeUnit.MINUTES)
-        );
+                .expireAfterWrite(24, TimeUnit.HOURS)
+                .recordStats());
         return cacheManager;
     }
-
 }

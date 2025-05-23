@@ -1,8 +1,8 @@
+// src/main/java/com/eventmanagement/entity/Attendance.java
 package com.eventmanagement.entity;
 
 import com.eventmanagement.enums.AttendanceStatus;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotNull;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
@@ -25,7 +25,6 @@ public class Attendance {
     private User user;
 
     @Enumerated(EnumType.STRING)
-    @NotNull
     @Column(nullable = false)
     private AttendanceStatus status = AttendanceStatus.GOING;
 
@@ -33,7 +32,6 @@ public class Attendance {
     @Column(name = "responded_at", nullable = false)
     private LocalDateTime respondedAt;
 
-    // Constructors
     public Attendance() {}
 
     public Attendance(Event event, User user, AttendanceStatus status) {
@@ -43,7 +41,6 @@ public class Attendance {
         this.id = new AttendanceId(event.getId(), user.getId());
     }
 
-    // Getters and Setters
     public AttendanceId getId() { return id; }
     public void setId(AttendanceId id) { this.id = id; }
 

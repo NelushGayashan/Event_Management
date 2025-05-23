@@ -1,6 +1,9 @@
+// src/main/java/com/eventmanagement/entity/AttendanceId.java
 package com.eventmanagement.entity;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
+
 import java.io.Serializable;
 import java.util.Objects;
 import java.util.UUID;
@@ -8,7 +11,10 @@ import java.util.UUID;
 @Embeddable
 public class AttendanceId implements Serializable {
 
+    @Column(name = "event_id")
     private UUID eventId;
+
+    @Column(name = "user_id")
     private UUID userId;
 
     public AttendanceId() {}
@@ -18,7 +24,6 @@ public class AttendanceId implements Serializable {
         this.userId = userId;
     }
 
-    // Getters and Setters
     public UUID getEventId() { return eventId; }
     public void setEventId(UUID eventId) { this.eventId = eventId; }
 

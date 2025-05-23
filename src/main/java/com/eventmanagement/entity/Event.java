@@ -1,13 +1,15 @@
+// src/main/java/com/eventmanagement/entity/Event.java
 package com.eventmanagement.entity;
 
 import com.eventmanagement.enums.Visibility;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Future;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
 import org.hibernate.annotations.Filter;
 import org.hibernate.annotations.FilterDef;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -15,9 +17,7 @@ import java.util.UUID;
 
 @Entity
 @Table(name = "events")
-@FilterDef(name = "softDeleteFilter")
 @Filter(name = "softDeleteFilter", condition = "deleted_at IS NULL")
-
 public class Event {
 
     @Id
@@ -33,10 +33,10 @@ public class Event {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "host_id", nullable = false)
-    @NotNull
     private User host;
 
     @NotNull
+    @Future
     @Column(name = "start_time", nullable = false)
     private LocalDateTime startTime;
 
@@ -44,26 +44,27 @@ public class Event {
     @Column(name = "end_time", nullable = false)
     private LocalDateTime endTime;
 
+    @NotBlank
+    @Column(nullable = false)
     private String location;
 
     @Enumerated(EnumType.STRING)
-    @NotNull
     @Column(nullable = false)
     private Visibility visibility = Visibility.PUBLIC;
+
+    @OneToMany(mappedBy = "event", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<Attendance> attendances;
 
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
     @UpdateTimestamp
-    @Column(name = "updated_at", nullable = false)
+    @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
     @Column(name = "deleted_at")
     private LocalDateTime deletedAt;
-
-    @OneToMany(mappedBy = "event", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private List<Attendance> attendances;
 
     // Constructors
     public Event() {}
@@ -104,6 +105,9 @@ public class Event {
     public Visibility getVisibility() { return visibility; }
     public void setVisibility(Visibility visibility) { this.visibility = visibility; }
 
+    public List<Attendance> getAttendances() { return attendances; }
+    public void setAttendances(List<Attendance> attendances) { this.attendances = attendances; }
+
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
 
@@ -112,7 +116,4 @@ public class Event {
 
     public LocalDateTime getDeletedAt() { return deletedAt; }
     public void setDeletedAt(LocalDateTime deletedAt) { this.deletedAt = deletedAt; }
-
-    public List<Attendance> getAttendances() { return attendances; }
-    public void setAttendances(List<Attendance> attendances) { this.attendances = attendances; }
 }

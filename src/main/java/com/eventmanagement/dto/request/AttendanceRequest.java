@@ -1,3 +1,4 @@
+// src/main/java/com/eventmanagement/dto/request/AttendanceRequest.java
 package com.eventmanagement.dto.request;
 
 import com.eventmanagement.enums.AttendanceStatus;
@@ -7,13 +8,12 @@ import java.util.UUID;
 
 public class AttendanceRequest {
 
-    @NotNull
+    @NotNull(message = "Event ID is required")
     private UUID eventId;
 
-    @NotNull
+    @NotNull(message = "Attendance status is required")
     private AttendanceStatus status;
 
-    // Constructors
     public AttendanceRequest() {}
 
     public AttendanceRequest(UUID eventId, AttendanceStatus status) {
@@ -21,7 +21,6 @@ public class AttendanceRequest {
         this.status = status;
     }
 
-    // Getters and Setters
     public UUID getEventId() { return eventId; }
     public void setEventId(UUID eventId) { this.eventId = eventId; }
 

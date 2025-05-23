@@ -1,3 +1,4 @@
+// src/main/java/com/eventmanagement/exception/GlobalExceptionHandler.java
 package com.eventmanagement.exception;
 
 import org.slf4j.Logger;

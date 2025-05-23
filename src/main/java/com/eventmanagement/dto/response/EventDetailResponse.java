@@ -1,3 +1,4 @@
+// src/main/java/com/eventmanagement/dto/response/EventDetailResponse.java
 package com.eventmanagement.dto.response;
 
 import com.eventmanagement.enums.AttendanceStatus;
@@ -25,10 +26,8 @@ public class EventDetailResponse {
     private Map<AttendanceStatus, Long> attendanceBreakdown;
     private List<AttendeeResponse> attendees;
 
-    // Constructors
     public EventDetailResponse() {}
 
-    // Getters and Setters
     public UUID getId() { return id; }
     public void setId(UUID id) { this.id = id; }
 
@@ -79,7 +78,6 @@ public class EventDetailResponse {
         private AttendanceStatus status;
         private LocalDateTime respondedAt;
 
-        // Constructors
         public AttendeeResponse() {}
 
         public AttendeeResponse(UUID userId, String userName, AttendanceStatus status, LocalDateTime respondedAt) {
@@ -89,7 +87,6 @@ public class EventDetailResponse {
             this.respondedAt = respondedAt;
         }
 
-        // Getters and Setters
         public UUID getUserId() { return userId; }
         public void setUserId(UUID userId) { this.userId = userId; }
 

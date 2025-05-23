@@ -1,3 +1,4 @@
+// src/main/java/com/eventmanagement/dto/response/EventResponse.java
 package com.eventmanagement.dto.response;
 
 import com.eventmanagement.enums.Visibility;
@@ -19,10 +20,8 @@ public class EventResponse {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
-    // Constructors
     public EventResponse() {}
 
-    // Getters and Setters
     public UUID getId() { return id; }
     public void setId(UUID id) { this.id = id; }
 

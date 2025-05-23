@@ -1,3 +1,4 @@
+// src/main/java/com/eventmanagement/dto/request/RegisterRequest.java
 package com.eventmanagement.dto.request;
 
 import com.eventmanagement.enums.Role;
@@ -7,21 +8,20 @@ import jakarta.validation.constraints.Size;
 
 public class RegisterRequest {
 
-    @NotBlank
-    @Size(min = 2, max = 50)
+    @NotBlank(message = "Name is required")
+    @Size(min = 2, max = 100, message = "Name must be between 2 and 100 characters")
     private String name;
 
-    @Email
-    @NotBlank
+    @NotBlank(message = "Email is required")
+    @Email(message = "Email should be valid")
     private String email;
 
-    @NotBlank
-    @Size(min = 6, max = 20)
+    @NotBlank(message = "Password is required")
+    @Size(min = 6, max = 100, message = "Password must be between 6 and 100 characters")
     private String password;
 
     private Role role = Role.USER;
 
-    // Constructors
     public RegisterRequest() {}
 
     public RegisterRequest(String name, String email, String password, Role role) {
@@ -31,7 +31,6 @@ public class RegisterRequest {
         this.role = role;
     }
 
-    // Getters and Setters
     public String getName() { return name; }
     public void setName(String name) { this.name = name; }
 

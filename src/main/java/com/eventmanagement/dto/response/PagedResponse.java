@@ -1,3 +1,4 @@
+// src/main/java/com/eventmanagement/dto/response/PagedResponse.java
 package com.eventmanagement.dto.response;
 
 import java.util.List;
@@ -12,7 +13,6 @@ public class PagedResponse<T> {
     private boolean first;
     private boolean last;
 
-    // Constructors
     public PagedResponse() {}
 
     public PagedResponse(List<T> content, int page, int size, long totalElements, int totalPages) {
@@ -25,7 +25,6 @@ public class PagedResponse<T> {
         this.last = page == totalPages - 1;
     }
 
-    // Getters and Setters
     public List<T> getContent() { return content; }
     public void setContent(List<T> content) { this.content = content; }
 

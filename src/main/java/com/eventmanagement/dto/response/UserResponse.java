@@ -1,3 +1,4 @@
+// src/main/java/com/eventmanagement/dto/response/UserResponse.java
 package com.eventmanagement.dto.response;
 
 import com.eventmanagement.enums.Role;
@@ -12,19 +13,10 @@ public class UserResponse {
     private String email;
     private Role role;
     private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
 
-    // Constructors
     public UserResponse() {}
 
-    public UserResponse(UUID id, String name, String email, Role role, LocalDateTime createdAt) {
-        this.id = id;
-        this.name = name;
-        this.email = email;
-        this.role = role;
-        this.createdAt = createdAt;
-    }
-
-    // Getters and Setters
     public UUID getId() { return id; }
     public void setId(UUID id) { this.id = id; }
 
@@ -39,4 +31,7 @@ public class UserResponse {
 
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
+
+    public LocalDateTime getUpdatedAt() { return updatedAt; }
+    public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
 }

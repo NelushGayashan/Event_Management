@@ -1,3 +1,4 @@
+// src/main/java/com/eventmanagement/config/JwtConfig.java
 package com.eventmanagement.config;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -10,7 +11,6 @@ public class JwtConfig {
     private String secret;
     private long expiration;
 
-    // Getters and Setters
     public String getSecret() { return secret; }
     public void setSecret(String secret) { this.secret = secret; }
 

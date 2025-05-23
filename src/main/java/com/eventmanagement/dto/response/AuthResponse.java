@@ -1,3 +1,4 @@
+// src/main/java/com/eventmanagement/dto/response/AuthResponse.java
 package com.eventmanagement.dto.response;
 
 import com.eventmanagement.enums.Role;
@@ -6,30 +7,26 @@ import java.util.UUID;
 
 public class AuthResponse {
 
-    private String token;
-    private String type = "Bearer";
+    private String accessToken;
+    private String tokenType = "Bearer";
     private UUID userId;
     private String name;
     private String email;
     private Role role;
 
-    // Constructors
-    public AuthResponse() {}
-
-    public AuthResponse(String token, UUID userId, String name, String email, Role role) {
-        this.token = token;
+    public AuthResponse(String accessToken, UUID userId, String name, String email, Role role) {
+        this.accessToken = accessToken;
         this.userId = userId;
         this.name = name;
         this.email = email;
         this.role = role;
     }
 
-    // Getters and Setters
-    public String getToken() { return token; }
-    public void setToken(String token) { this.token = token; }
+    public String getAccessToken() { return accessToken; }
+    public void setAccessToken(String accessToken) { this.accessToken = accessToken; }
 
-    public String getType() { return type; }
-    public void setType(String type) { this.type = type; }
+    public String getTokenType() { return tokenType; }
+    public void setTokenType(String tokenType) { this.tokenType = tokenType; }
 
     public UUID getUserId() { return userId; }
     public void setUserId(UUID userId) { this.userId = userId; }

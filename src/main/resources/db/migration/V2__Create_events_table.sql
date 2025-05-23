@@ -1,17 +1,17 @@
+-- V2__Create_events_table.sql
 CREATE TABLE events (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    title VARCHAR(255) NOT NULL,
+    title VARCHAR(200) NOT NULL,
     description TEXT,
-    host_id UUID NOT NULL,
-    start_time TIMESTAMP WITH TIME ZONE NOT NULL,
-    end_time TIMESTAMP WITH TIME ZONE NOT NULL,
-    location VARCHAR(500),
+    host_id UUID NOT NULL REFERENCES users(id),
+    start_time TIMESTAMP NOT NULL,
+    end_time TIMESTAMP NOT NULL,
+    location VARCHAR(500) NOT NULL,
     visibility VARCHAR(20) NOT NULL DEFAULT 'PUBLIC',
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    deleted_at TIMESTAMP WITH TIME ZONE NULL,
-
-    CONSTRAINT fk_events_host FOREIGN KEY (host_id) REFERENCES users(id),
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    deleted_at TIMESTAMP NULL,
+    
     CONSTRAINT chk_event_times CHECK (end_time > start_time)
 );
 

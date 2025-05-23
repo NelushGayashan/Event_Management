@@ -1,3 +1,4 @@
+// src/main/java/com/eventmanagement/config/RateLimitConfig.java
 package com.eventmanagement.config;
 
 import io.github.bucket4j.Bandwidth;
