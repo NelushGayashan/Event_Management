@@ -1,3 +1,4 @@
+// src/main/java/com/eventmanagement/security/UserPrincipal.java
 package com.eventmanagement.security;
 
 import com.eventmanagement.entity.User;
@@ -42,7 +43,6 @@ public class UserPrincipal implements UserDetails {
         );
     }
 
-    // UserDetails implementation
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return authorities;
@@ -78,7 +78,6 @@ public class UserPrincipal implements UserDetails {
         return true;
     }
 
-    // Custom getters
     public UUID getId() {
         return id;
     }

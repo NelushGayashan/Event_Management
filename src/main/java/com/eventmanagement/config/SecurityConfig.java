@@ -62,11 +62,11 @@ public class SecurityConfig {
                         .requestMatchers("/actuator/health").permitAll()
 
                         .requestMatchers(HttpMethod.GET, "/api/events").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/events/{id}").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/events/*").permitAll() // FIXED HERE
                         .requestMatchers(HttpMethod.GET, "/api/events/upcoming").permitAll()
 
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.DELETE, "/api/events/{id}").hasAnyRole("ADMIN", "USER")
+                        .requestMatchers(HttpMethod.DELETE, "/api/events/*").hasAnyRole("ADMIN", "USER")
 
                         .anyRequest().authenticated()
                 )
@@ -74,6 +74,7 @@ public class SecurityConfig {
 
         return http.build();
     }
+
 
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {

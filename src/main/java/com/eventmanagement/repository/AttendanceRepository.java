@@ -1,3 +1,4 @@
+// src/main/java/com/eventmanagement/repository/AttendanceRepository.java
 package com.eventmanagement.repository;
 
 import com.eventmanagement.entity.Attendance;
@@ -11,38 +12,37 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
 @Repository
 public interface AttendanceRepository extends JpaRepository<Attendance, AttendanceId> {
 
-    // Find attendance by event
-    List<Attendance> findByEventId(UUID eventId);
+    @Query("SELECT a FROM Attendance a WHERE a.event.id = :eventId AND a.deletedAt IS NULL")
+    List<Attendance> findByEventId(@Param("eventId") UUID eventId);
 
-    // Find attendance by user
-    Page<Attendance> findByUserId(UUID userId, Pageable pageable);
+    @Query("SELECT a FROM Attendance a WHERE a.user.id = :userId AND a.deletedAt IS NULL")
+    Page<Attendance> findByUserId(@Param("userId") UUID userId, Pageable pageable);
 
-    // Find attendance by event and status
-    List<Attendance> findByEventIdAndStatus(UUID eventId, AttendanceStatus status);
+    @Query("SELECT a FROM Attendance a WHERE a.event.id = :eventId AND a.status = :status AND a.deletedAt IS NULL")
+    List<Attendance> findByEventIdAndStatus(@Param("eventId") UUID eventId, @Param("status") AttendanceStatus status);
 
-    // Count attendees by status for an event
-    @Query("SELECT a.status, COUNT(a) FROM Attendance a WHERE a.event.id = :eventId GROUP BY a.status")
+    @Query("SELECT a.status, COUNT(a) FROM Attendance a WHERE a.event.id = :eventId AND a.deletedAt IS NULL GROUP BY a.status")
     List<Object[]> countAttendanceByStatus(@Param("eventId") UUID eventId);
 
-    // Check if user is attending event
-    boolean existsByEventIdAndUserId(UUID eventId, UUID userId);
+    @Query("SELECT CASE WHEN COUNT(a) > 0 THEN true ELSE false END FROM Attendance a WHERE a.event.id = :eventId AND a.user.id = :userId AND a.deletedAt IS NULL")
+    boolean existsByEventIdAndUserId(@Param("eventId") UUID eventId, @Param("userId") UUID userId);
 
-    // Get user's attendance for event
-    Optional<Attendance> findByEventIdAndUserId(UUID eventId, UUID userId);
+    @Query("SELECT a FROM Attendance a WHERE a.event.id = :eventId AND a.user.id = :userId AND a.deletedAt IS NULL")
+    Optional<Attendance> findByEventIdAndUserId(@Param("eventId") UUID eventId, @Param("userId") UUID userId);
 
-    // Get attendance statistics
-    @Query("SELECT COUNT(a) FROM Attendance a WHERE a.event.id = :eventId AND a.status = :status")
+    @Query("SELECT COUNT(a) FROM Attendance a WHERE a.event.id = :eventId AND a.status = :status AND a.deletedAt IS NULL")
     Long countByEventIdAndStatus(@Param("eventId") UUID eventId, @Param("status") AttendanceStatus status);
 
-    // Find events user is going to attend
-    @Query("SELECT a FROM Attendance a WHERE a.user.id = :userId AND a.status = 'GOING' " +
+    @Query("SELECT a FROM Attendance a WHERE a.user.id = :userId AND a.status = 'GOING' AND a.deletedAt IS NULL " +
             "AND a.event.startTime > CURRENT_TIMESTAMP ORDER BY a.event.startTime ASC")
     List<Attendance> findUpcomingAttendanceByUserId(@Param("userId") UUID userId);
+
+    @Query("SELECT a FROM Attendance a WHERE a.event.id = :eventId")
+    List<Attendance> findByEventIdIncludingDeleted(@Param("eventId") UUID eventId);
 }

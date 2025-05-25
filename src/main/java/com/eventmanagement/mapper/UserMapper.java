@@ -1,3 +1,4 @@
+// src/main/java/com/eventmanagement/mapper/UserMapper.java
 package com.eventmanagement.mapper;
 
 import com.eventmanagement.dto.request.RegisterRequest;

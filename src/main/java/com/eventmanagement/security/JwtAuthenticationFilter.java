@@ -1,3 +1,4 @@
+// src/main/java/com/eventmanagement/security/JwtAuthenticationFilter.java
 package com.eventmanagement.security;
 
 import jakarta.servlet.FilterChain;
@@ -27,24 +28,15 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private static final Logger logger = LoggerFactory.getLogger(JwtAuthenticationFilter.class);
 
-    private final JwtTokenProvider tokenProvider;
-    private final UserDetailsService userDetailsService;
-    private final CacheManager tokenBlacklistCacheManager;
+    @Autowired
+    private JwtTokenProvider tokenProvider;
 
-    public JwtAuthenticationFilter(JwtTokenProvider tokenProvider,
-                                   UserDetailsService userDetailsService,
-                                   @Qualifier("tokenBlacklistCacheManager") CacheManager tokenBlacklistCacheManager) {
-        this.tokenProvider = tokenProvider;
-        this.userDetailsService = userDetailsService;
-        this.tokenBlacklistCacheManager = tokenBlacklistCacheManager;
-    }
+    @Autowired
+    private UserDetailsService userDetailsService;
 
-    public JwtAuthenticationFilter(JwtTokenProvider tokenProvider,
-                                   UserDetailsService userDetailsService) {
-        this.tokenProvider = tokenProvider;
-        this.userDetailsService = userDetailsService;
-        this.tokenBlacklistCacheManager = null;
-    }
+    @Autowired(required = false)
+    @Qualifier("tokenBlacklistCacheManager")
+    private CacheManager tokenBlacklistCacheManager;
 
     @Override
     protected void doFilterInternal(@NonNull HttpServletRequest request,
@@ -54,7 +46,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             String jwt = getJwtFromRequest(request);
 
             if (StringUtils.hasText(jwt)) {
-                // ✅ Check token blacklist (if cache is available)
                 if (isTokenBlacklisted(jwt)) {
                     handleBlacklistedToken(response);
                     return;

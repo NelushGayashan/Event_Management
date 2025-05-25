@@ -1,11 +1,11 @@
+// src/main/java/com/eventmanagement/security/JwtTokenProvider.java
 package com.eventmanagement.security;
 
-import com.eventmanagement.config.JwtConfig;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
 
@@ -17,20 +17,28 @@ public class JwtTokenProvider {
 
     private static final Logger logger = LoggerFactory.getLogger(JwtTokenProvider.class);
 
-    @Autowired
-    private JwtConfig jwtConfig;
+    @Value("${jwt.secret}")
+    private String jwtSecret;
+
+    @Value("${jwt.expiration}")
+    private long jwtExpiration;
 
     private SecretKey getSigningKey() {
-        return Keys.hmacShaKeyFor(jwtConfig.getSecret().getBytes());
+        return Keys.hmacShaKeyFor(jwtSecret.getBytes());
     }
 
     public String generateToken(Authentication authentication) {
-        UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
+        String subject;
+        if (authentication.getPrincipal() instanceof UserPrincipal userPrincipal) {
+            subject = userPrincipal.getId().toString();
+        } else {
+            subject = authentication.getName();
+        }
 
-        Date expiryDate = new Date(System.currentTimeMillis() + jwtConfig.getExpiration());
+        Date expiryDate = new Date(System.currentTimeMillis() + jwtExpiration);
 
         return Jwts.builder()
-                .setSubject(userPrincipal.getId().toString())
+                .setSubject(subject)
                 .setIssuedAt(new Date())
                 .setExpiration(expiryDate)
                 .signWith(getSigningKey())
@@ -77,5 +85,4 @@ public class JwtTokenProvider {
 
         return claims.getExpiration().getTime();
     }
-
 }

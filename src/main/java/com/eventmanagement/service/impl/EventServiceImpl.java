@@ -1,4 +1,4 @@
-// EventServiceImpl.java
+// src/main/java/com/eventmanagement/service/impl/EventServiceImpl.java
 package com.eventmanagement.service.impl;
 
 import com.eventmanagement.dto.request.AttendanceRequest;
@@ -20,7 +20,9 @@ import com.eventmanagement.exception.UnauthorizedException;
 import com.eventmanagement.mapper.EventMapper;
 import com.eventmanagement.repository.AttendanceRepository;
 import com.eventmanagement.repository.EventRepository;
+import com.eventmanagement.service.AttendanceService;
 import com.eventmanagement.service.EventService;
+import com.eventmanagement.service.FilterService;
 import com.eventmanagement.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
@@ -47,18 +49,29 @@ public class EventServiceImpl implements EventService {
     private AttendanceRepository attendanceRepository;
 
     @Autowired
+    private AttendanceService attendanceService;
+
+    @Autowired
     private UserService userService;
 
     @Autowired
     private EventMapper eventMapper;
 
+    @Autowired
+    private FilterService filterService;
+
     @Override
     @CacheEvict(value = "events", allEntries = true)
     public EventResponse createEvent(CreateEventRequest request, UUID userId) {
-        // Validate event times
-        if (request.getEndTime().isBefore(request.getStartTime())) {
-            throw new BadRequestException("End time must be after start time");
+        if (request.getStartTime().isBefore(LocalDateTime.now())) {
+            throw new BadRequestException("Event start time must be in the future");
         }
+
+        if (request.getEndTime().isBefore(request.getStartTime())) {
+            throw new BadRequestException("Event end time must be after start time");
+        }
+
+        filterService.enableSoftDeleteFilter();
 
         User host = userService.getEntityById(userId);
         Event event = eventMapper.toEntity(request, host);
@@ -70,20 +83,24 @@ public class EventServiceImpl implements EventService {
     @Override
     @CacheEvict(value = "events", allEntries = true)
     public EventResponse updateEvent(UUID eventId, UpdateEventRequest request, UUID userId) {
+        filterService.enableSoftDeleteFilter();
+
         Event event = eventRepository.findById(eventId)
                 .orElseThrow(() -> new ResourceNotFoundException("Event", "id", eventId));
 
         User user = userService.getEntityById(userId);
 
-        // Check authorization
         if (!event.getHost().getId().equals(userId) && !user.getRole().equals(Role.ADMIN)) {
             throw new UnauthorizedException("You can only update events you are hosting");
         }
 
-        // Validate times if provided
         if (request.getStartTime() != null && request.getEndTime() != null) {
+            if (request.getStartTime().isBefore(LocalDateTime.now())) {
+                throw new BadRequestException("Event start time must be in the future");
+            }
+
             if (request.getEndTime().isBefore(request.getStartTime())) {
-                throw new BadRequestException("End time must be after start time");
+                throw new BadRequestException("Event end time must be after start time");
             }
         }
 
@@ -96,17 +113,17 @@ public class EventServiceImpl implements EventService {
     @Override
     @CacheEvict(value = "events", allEntries = true)
     public void deleteEvent(UUID eventId, UUID userId) {
+        filterService.enableSoftDeleteFilter();
+
         Event event = eventRepository.findById(eventId)
                 .orElseThrow(() -> new ResourceNotFoundException("Event", "id", eventId));
 
         User user = userService.getEntityById(userId);
 
-        // Check authorization
         if (!event.getHost().getId().equals(userId) && !user.getRole().equals(Role.ADMIN)) {
             throw new UnauthorizedException("You can only delete events you are hosting");
         }
 
-        // Soft delete
         event.setDeletedAt(LocalDateTime.now());
         eventRepository.save(event);
     }
@@ -114,10 +131,11 @@ public class EventServiceImpl implements EventService {
     @Override
     @Cacheable(value = "events", key = "#eventId + '_' + #userId")
     public EventDetailResponse getEventDetails(UUID eventId, UUID userId) {
+        filterService.enableSoftDeleteFilter();
+
         Event event = eventRepository.findById(eventId)
                 .orElseThrow(() -> new ResourceNotFoundException("Event", "id", eventId));
 
-        // Check visibility
         if (event.getVisibility() == Visibility.PRIVATE) {
             User user = userService.getEntityById(userId);
             boolean isHost = event.getHost().getId().equals(userId);
@@ -131,7 +149,6 @@ public class EventServiceImpl implements EventService {
 
         EventDetailResponse response = eventMapper.toDetailResponse(event);
 
-        // Get attendance statistics
         List<Object[]> attendanceStats = attendanceRepository.countAttendanceByStatus(eventId);
         Map<AttendanceStatus, Long> attendanceBreakdown = attendanceStats.stream()
                 .collect(Collectors.toMap(
@@ -142,8 +159,7 @@ public class EventServiceImpl implements EventService {
         response.setAttendanceBreakdown(attendanceBreakdown);
         response.setAttendeeCount(attendanceBreakdown.values().stream().mapToLong(Long::longValue).sum());
 
-        // Get attendees
-        List<Attendance> attendances = attendanceRepository.findByEventId(eventId);
+        List<Attendance> attendances = attendanceService.findActiveAttendances(eventId);
         List<EventDetailResponse.AttendeeResponse> attendees = attendances.stream()
                 .map(attendance -> new EventDetailResponse.AttendeeResponse(
                         attendance.getUser().getId(),
@@ -163,6 +179,8 @@ public class EventServiceImpl implements EventService {
     public PagedResponse<EventResponse> getAllEvents(String title, String location,
                                                      LocalDateTime startDate, LocalDateTime endDate,
                                                      Visibility visibility, UUID hostId, Pageable pageable) {
+        filterService.enableSoftDeleteFilter();
+
         Page<Event> events = eventRepository.findEventsWithFilters(
                 title, location, startDate, endDate, visibility, hostId, pageable);
 
@@ -172,30 +190,37 @@ public class EventServiceImpl implements EventService {
     @Override
     @Cacheable(value = "upcomingEvents")
     public PagedResponse<EventResponse> getUpcomingEvents(Pageable pageable) {
+        filterService.enableSoftDeleteFilter();
+
         Page<Event> events = eventRepository.findUpcomingPublicEvents(LocalDateTime.now(), pageable);
         return createPagedResponse(events);
     }
 
     @Override
     public PagedResponse<EventResponse> getUserEvents(UUID userId, Pageable pageable) {
+        filterService.enableSoftDeleteFilter();
+
         Page<Event> events = eventRepository.findByHostId(userId, pageable);
         return createPagedResponse(events);
     }
 
     @Override
     public PagedResponse<EventResponse> getUserAttendingEvents(UUID userId, Pageable pageable) {
+        filterService.enableSoftDeleteFilter();
+
         Page<Event> events = eventRepository.findEventsByAttendeeId(userId, pageable);
         return createPagedResponse(events);
     }
 
     @Override
     public void updateAttendance(AttendanceRequest request, UUID userId) {
+        filterService.enableSoftDeleteFilter();
+
         Event event = eventRepository.findById(request.getEventId())
                 .orElseThrow(() -> new ResourceNotFoundException("Event", "id", request.getEventId()));
 
         User user = userService.getEntityById(userId);
 
-        // Check if event is accessible
         if (event.getVisibility() == Visibility.PRIVATE) {
             boolean isHost = event.getHost().getId().equals(userId);
             boolean isAdmin = user.getRole().equals(Role.ADMIN);
@@ -217,6 +242,8 @@ public class EventServiceImpl implements EventService {
 
     @Override
     public AttendanceStatus getUserAttendanceStatus(UUID eventId, UUID userId) {
+        filterService.enableSoftDeleteFilter();
+
         return attendanceRepository.findByEventIdAndUserId(eventId, userId)
                 .map(Attendance::getStatus)
                 .orElse(AttendanceStatus.NONE);

@@ -11,6 +11,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
@@ -81,9 +82,24 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(errorResponse, HttpStatus.FORBIDDEN);
     }
 
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public ResponseEntity<ErrorResponse> handleTypeMismatch(MethodArgumentTypeMismatchException ex, WebRequest request) {
+        if (ex.getRequiredType() == java.util.UUID.class) {
+            ErrorResponse errorResponse = new ErrorResponse(
+                    HttpStatus.BAD_REQUEST.value(),
+                    "Bad Request",
+                    "Invalid UUID format",
+                    request.getDescription(false).replace("uri=", ""),
+                    LocalDateTime.now()
+            );
+            return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+        }
+        return handleGlobalException(ex, request);
+    }
+
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<ValidationErrorResponse> handleValidationExceptions(
-            MethodArgumentNotValidException ex, WebRequest request) {
+    public ResponseEntity<Map<String, String>> handleValidationExceptions(
+            MethodArgumentNotValidException ex) {
 
         Map<String, String> errors = new HashMap<>();
         ex.getBindingResult().getAllErrors().forEach((error) -> {
@@ -92,16 +108,7 @@ public class GlobalExceptionHandler {
             errors.put(fieldName, errorMessage);
         });
 
-        ValidationErrorResponse errorResponse = new ValidationErrorResponse(
-                HttpStatus.BAD_REQUEST.value(),
-                "Validation Failed",
-                "Input validation failed",
-                request.getDescription(false).replace("uri=", ""),
-                LocalDateTime.now(),
-                errors
-        );
-
-        return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+        return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(Exception.class)
@@ -121,7 +128,6 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
-    // Error Response Classes
     public static class ErrorResponse {
         private int status;
         private String error;
@@ -137,7 +143,6 @@ public class GlobalExceptionHandler {
             this.timestamp = timestamp;
         }
 
-        // Getters and Setters
         public int getStatus() { return status; }
         public void setStatus(int status) { this.status = status; }
 
@@ -152,20 +157,5 @@ public class GlobalExceptionHandler {
 
         public LocalDateTime getTimestamp() { return timestamp; }
         public void setTimestamp(LocalDateTime timestamp) { this.timestamp = timestamp; }
-    }
-
-    public static class ValidationErrorResponse extends ErrorResponse {
-        private Map<String, String> validationErrors;
-
-        public ValidationErrorResponse(int status, String error, String message, String path,
-                                       LocalDateTime timestamp, Map<String, String> validationErrors) {
-            super(status, error, message, path, timestamp);
-            this.validationErrors = validationErrors;
-        }
-
-        public Map<String, String> getValidationErrors() { return validationErrors; }
-        public void setValidationErrors(Map<String, String> validationErrors) {
-            this.validationErrors = validationErrors;
-        }
     }
 }

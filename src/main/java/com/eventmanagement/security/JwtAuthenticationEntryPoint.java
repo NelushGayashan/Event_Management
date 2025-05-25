@@ -1,3 +1,4 @@
+// src/main/java/com/eventmanagement/security/JwtAuthenticationEntryPoint.java
 package com.eventmanagement.security;
 
 import com.fasterxml.jackson.databind.ObjectMapper;

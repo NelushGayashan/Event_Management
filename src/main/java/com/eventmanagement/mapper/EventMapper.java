@@ -1,3 +1,4 @@
+// src/main/java/com/eventmanagement/mapper/EventMapper.java
 package com.eventmanagement.mapper;
 
 import com.eventmanagement.dto.request.CreateEventRequest;
@@ -6,11 +7,9 @@ import com.eventmanagement.dto.response.EventDetailResponse;
 import com.eventmanagement.dto.response.EventResponse;
 import com.eventmanagement.entity.Event;
 import com.eventmanagement.entity.User;
-import com.eventmanagement.enums.AttendanceStatus;
 import org.mapstruct.*;
 
 import java.util.List;
-import java.util.Map;
 
 @Mapper(componentModel = "spring")
 public interface EventMapper {
@@ -37,5 +36,11 @@ public interface EventMapper {
     EventDetailResponse toDetailResponse(Event event);
 
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "host", ignore = true)
+    @Mapping(target = "attendances", ignore = true)
+    @Mapping(target = "createdAt", ignore = true)
+    @Mapping(target = "updatedAt", ignore = true)
+    @Mapping(target = "deletedAt", ignore = true)
     void updateEntityFromRequest(UpdateEventRequest request, @MappingTarget Event event);
 }

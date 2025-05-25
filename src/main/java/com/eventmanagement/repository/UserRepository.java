@@ -1,3 +1,4 @@
+// src/main/java/com/eventmanagement/repository/UserRepository.java
 package com.eventmanagement.repository;
 
 import com.eventmanagement.entity.User;

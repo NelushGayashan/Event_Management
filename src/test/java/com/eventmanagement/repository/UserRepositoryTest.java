@@ -1,6 +1,8 @@
-// UserRepositoryTest.java
+// src/test/java/com/eventmanagement/repository/UserRepositoryTest.java
 package com.eventmanagement.repository;
 
+import com.eventmanagement.config.AuditorAwareConfig;
+import com.eventmanagement.config.TestJpaAuditingConfig;
 import com.eventmanagement.entity.User;
 import com.eventmanagement.enums.Role;
 import org.junit.jupiter.api.BeforeEach;
@@ -8,6 +10,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
+import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.test.context.ActiveProfiles;
@@ -18,6 +21,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @DataJpaTest
 @ActiveProfiles("test")
+@Import({TestJpaAuditingConfig.class, AuditorAwareConfig.class})
 class UserRepositoryTest {
 
     @Autowired
@@ -104,9 +108,9 @@ class UserRepositoryTest {
         entityManager.persistAndFlush(anotherUser);
 
         Page<User> foundByName = userRepository.findByNameContainingOrEmailContaining(
-                "John", "", PageRequest.of(0, 10));
+                "John", "nonexistent", PageRequest.of(0, 10));
         Page<User> foundByEmail = userRepository.findByNameContainingOrEmailContaining(
-                "", "jane.smith", PageRequest.of(0, 10));
+                "nonexistent", "jane.smith", PageRequest.of(0, 10));
 
         assertThat(foundByName.getContent()).hasSize(1);
         assertThat(foundByName.getContent().get(0).getName()).isEqualTo("John Doe");

@@ -1,4 +1,4 @@
-// AuthServiceTest.java
+// src/test/java/com/eventmanagement/service/AuthServiceTest.java
 package com.eventmanagement.service;
 
 import com.eventmanagement.dto.request.LoginRequest;

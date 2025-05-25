@@ -1,3 +1,4 @@
+// src/main/java/com/eventmanagement/EventmanagementApplication.java
 package com.eventmanagement;
 
 import org.springframework.boot.SpringApplication;
@@ -7,7 +8,6 @@ import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 @SpringBootApplication
-@EnableJpaAuditing
 @EnableCaching
 @EnableTransactionManagement
 public class EventmanagementApplication {

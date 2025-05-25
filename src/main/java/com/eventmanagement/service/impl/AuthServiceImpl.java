@@ -1,3 +1,4 @@
+// src/main/java/com/eventmanagement/service/impl/AuthServiceImpl.java
 package com.eventmanagement.service.impl;
 
 import com.eventmanagement.dto.request.LoginRequest;
@@ -20,7 +21,6 @@ import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
 import org.springframework.beans.factory.annotation.Qualifier;
 
-
 @Service
 @Transactional
 public class AuthServiceImpl implements AuthService {
@@ -40,6 +40,10 @@ public class AuthServiceImpl implements AuthService {
     @Autowired
     private JwtTokenProvider jwtTokenProvider;
 
+    @Autowired(required = false)
+    @Qualifier("tokenBlacklistCacheManager")
+    private CacheManager tokenBlacklistCacheManager;
+
     @Override
     public AuthResponse register(RegisterRequest request) {
         if (userRepository.existsByEmail(request.getEmail())) {
@@ -51,7 +55,6 @@ public class AuthServiceImpl implements AuthService {
 
         user = userRepository.save(user);
 
-        // Automatically log in after registration
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword())
         );
@@ -81,16 +84,11 @@ public class AuthServiceImpl implements AuthService {
         long now = System.currentTimeMillis();
         long ttl = expiration - now;
 
-        if (ttl > 0) {
+        if (ttl > 0 && tokenBlacklistCacheManager != null) {
             Cache tokenBlacklistCache = tokenBlacklistCacheManager.getCache("tokenBlacklist");
             if (tokenBlacklistCache != null) {
-                tokenBlacklistCache.put(token, true); // add token to blacklist
+                tokenBlacklistCache.put(token, true);
             }
         }
     }
-
-    @Autowired
-    @Qualifier("tokenBlacklistCacheManager")
-    private CacheManager tokenBlacklistCacheManager;
-
 }

@@ -1,3 +1,4 @@
+// src/main/java/com/eventmanagement/service/EventService.java
 package com.eventmanagement.service;
 
 import com.eventmanagement.dto.request.AttendanceRequest;

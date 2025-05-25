@@ -1,4 +1,4 @@
-// EventManagementApplicationTests.java
+// src/test/java/com/eventmanagement/EventManagementApplicationTests.java
 package com.eventmanagement;
 
 import org.junit.jupiter.api.Test;
@@ -9,8 +9,8 @@ import org.springframework.test.context.ActiveProfiles;
 @ActiveProfiles("test")
 class EventManagementApplicationTests {
 
-	@Test
-	void contextLoads() {
+    @Test
+    void contextLoads() {
 
-	}
+    }
 }

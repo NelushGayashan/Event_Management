@@ -1,4 +1,4 @@
-# application.yml (common base config)
+# src/main/resources/application.yml
 spring:
   application:
     name: event-management-system

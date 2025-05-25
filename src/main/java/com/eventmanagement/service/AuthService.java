@@ -1,3 +1,4 @@
+// src/main/java/com/eventmanagement/service/AuthService.java
 package com.eventmanagement.service;
 
 import com.eventmanagement.dto.request.LoginRequest;

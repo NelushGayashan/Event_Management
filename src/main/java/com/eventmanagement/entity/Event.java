@@ -3,13 +3,9 @@ package com.eventmanagement.entity;
 
 import com.eventmanagement.enums.Visibility;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.Future;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.Filter;
-import org.hibernate.annotations.FilterDef;
-import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -17,8 +13,8 @@ import java.util.UUID;
 
 @Entity
 @Table(name = "events")
-@Filter(name = "softDeleteFilter", condition = "deleted_at IS NULL")
-public class Event {
+@Filter(name = "softDeleteFilter", condition = "(:isDeleted = false and deleted_at IS NULL)")
+public class Event extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -36,7 +32,6 @@ public class Event {
     private User host;
 
     @NotNull
-    @Future
     @Column(name = "start_time", nullable = false)
     private LocalDateTime startTime;
 
@@ -55,18 +50,6 @@ public class Event {
     @OneToMany(mappedBy = "event", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Attendance> attendances;
 
-    @CreationTimestamp
-    @Column(name = "created_at", nullable = false, updatable = false)
-    private LocalDateTime createdAt;
-
-    @UpdateTimestamp
-    @Column(name = "updated_at")
-    private LocalDateTime updatedAt;
-
-    @Column(name = "deleted_at")
-    private LocalDateTime deletedAt;
-
-    // Constructors
     public Event() {}
 
     public Event(String title, String description, User host, LocalDateTime startTime,
@@ -80,7 +63,6 @@ public class Event {
         this.visibility = visibility;
     }
 
-    // Getters and Setters
     public UUID getId() { return id; }
     public void setId(UUID id) { this.id = id; }
 
@@ -107,13 +89,4 @@ public class Event {
 
     public List<Attendance> getAttendances() { return attendances; }
     public void setAttendances(List<Attendance> attendances) { this.attendances = attendances; }
-
-    public LocalDateTime getCreatedAt() { return createdAt; }
-    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
-
-    public LocalDateTime getUpdatedAt() { return updatedAt; }
-    public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
-
-    public LocalDateTime getDeletedAt() { return deletedAt; }
-    public void setDeletedAt(LocalDateTime deletedAt) { this.deletedAt = deletedAt; }
 }

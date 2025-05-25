@@ -3,13 +3,14 @@ package com.eventmanagement.entity;
 
 import com.eventmanagement.enums.AttendanceStatus;
 import jakarta.persistence.*;
-import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.Filter;
 
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "attendance")
-public class Attendance {
+@Filter(name = "softDeleteFilter", condition = "(:isDeleted = false and deleted_at IS NULL)")
+public class Attendance extends BaseEntity {
 
     @EmbeddedId
     private AttendanceId id;
@@ -28,7 +29,6 @@ public class Attendance {
     @Column(nullable = false)
     private AttendanceStatus status = AttendanceStatus.GOING;
 
-    @CreationTimestamp
     @Column(name = "responded_at", nullable = false)
     private LocalDateTime respondedAt;
 
@@ -55,4 +55,11 @@ public class Attendance {
 
     public LocalDateTime getRespondedAt() { return respondedAt; }
     public void setRespondedAt(LocalDateTime respondedAt) { this.respondedAt = respondedAt; }
+
+    @PrePersist
+    public void prePersist() {
+        if (respondedAt == null) {
+            respondedAt = LocalDateTime.now();
+        }
+    }
 }
