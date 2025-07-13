@@ -189,95 +189,123 @@ event-management-system/
 ├── src/
 │   ├── main/
 │   │   ├── java/com/eventmanagement/
-│   │   │   ├── config/                 # Configuration classes
+│   │   │   ├── config/                 # Application configuration classes
+│   │   │   │   ├── AuditorAwareConfig.java
 │   │   │   │   ├── CacheConfig.java
+│   │   │   │   ├── HibernateConfig.java
 │   │   │   │   ├── JpaAuditingConfig.java
+│   │   │   │   ├── JpaConfig.java
+│   │   │   │   ├── JwtConfig.java
+│   │   │   │   ├── MethodSecurityConfig.java
+│   │   │   │   ├── RateLimitConfig.java
 │   │   │   │   ├── SecurityConfig.java
-│   │   │   │   └── AuditorAwareConfig.java
-│   │   │   ├── controller/             # REST controllers
+│   │   │   │   └── SoftDeleteFilterConfig.java
+│   │   │   ├── controller/             # REST API controllers
 │   │   │   │   ├── AuthController.java
 │   │   │   │   ├── EventController.java
 │   │   │   │   └── UserController.java
-│   │   │   ├── dto/                    # Data Transfer Objects
+│   │   │   ├── dto/                    # Data Transfer Objects (request/response)
 │   │   │   │   ├── request/
+│   │   │   │   │   ├── AttendanceRequest.java
 │   │   │   │   │   ├── CreateEventRequest.java
 │   │   │   │   │   ├── LoginRequest.java
-│   │   │   │   │   └── RegisterRequest.java
+│   │   │   │   │   ├── RegisterRequest.java
+│   │   │   │   │   └── UpdateEventRequest.java
 │   │   │   │   └── response/
-│   │   │   │       ├── EventResponse.java
-│   │   │   │       ├── AuthResponse.java
-│   │   │   │       └── UserResponse.java
-│   │   │   ├── entity/                 # JPA entities
-│   │   │   │   ├── BaseEntity.java
-│   │   │   │   ├── User.java
-│   │   │   │   ├── Event.java
+│   │   │   │       ├── AuthResponse.java
+│   │   │   │       ├── EventDetailResponse.java
+│   │   │   │       ├── EventResponse.java
+│   │   │   │       ├── EventWithAttendeeCountResponse.java
+│   │   │   │       ├── PagedResponse.java
+│   │   │   │       └── UserResponse.java
+│   │   │   ├── entity/                 # JPA entities (database models)
 │   │   │   │   ├── Attendance.java
-│   │   │   │   └── AttendanceId.java
+│   │   │   │   ├── AttendanceId.java
+│   │   │   │   ├── BaseEntity.java
+│   │   │   │   ├── Event.java
+│   │   │   │   └── User.java
 │   │   │   ├── enums/                  # Enumeration classes
+│   │   │   │   ├── AttendanceStatus.java
 │   │   │   │   ├── Role.java
-│   │   │   │   ├── Visibility.java
-│   │   │   │   └── AttendanceStatus.java
-│   │   │   ├── exception/              # Custom exceptions
+│   │   │   │   └── Visibility.java
+│   │   │   ├── exception/              # Custom exceptions and global handler
+│   │   │   │   ├── BadRequestException.java
 │   │   │   │   ├── GlobalExceptionHandler.java
 │   │   │   │   ├── ResourceNotFoundException.java
-│   │   │   │   ├── BadRequestException.java
 │   │   │   │   └── UnauthorizedException.java
-│   │   │   ├── mapper/                 # MapStruct mappers
+│   │   │   ├── mapper/                 # MapStruct interfaces for DTO-entity mapping
 │   │   │   │   ├── EventMapper.java
 │   │   │   │   └── UserMapper.java
-│   │   │   ├── repository/             # Data repositories
-│   │   │   │   ├── UserRepository.java
+│   │   │   ├── repository/             # Spring Data JPA repositories
+│   │   │   │   ├── AttendanceRepository.java
 │   │   │   │   ├── EventRepository.java
-│   │   │   │   └── AttendanceRepository.java
-│   │   │   ├── security/               # Security components
-│   │   │   │   ├── JwtTokenProvider.java
-│   │   │   │   ├── JwtAuthenticationFilter.java
+│   │   │   │   └── UserRepository.java
+│   │   │   ├── security/               # Security components (JWT, UserDetails)
 │   │   │   │   ├── CustomUserDetailsService.java
+│   │   │   │   ├── JwtAuthenticationEntryPoint.java
+│   │   │   │   ├── JwtAuthenticationFilter.java
+│   │   │   │   ├── JwtTokenProvider.java
 │   │   │   │   └── UserPrincipal.java
-│   │   │   ├── service/                # Business logic
+│   │   │   ├── service/                # Business logic interfaces
+│   │   │   │   ├── impl/
+│   │   │   │   │   ├── AuthServiceImpl.java
+│   │   │   │   │   ├── EventServiceImpl.java
+│   │   │   │   │   └── UserServiceImpl.java
+│   │   │   │   ├── AttendanceService.java
 │   │   │   │   ├── AuthService.java
 │   │   │   │   ├── EventService.java
-│   │   │   │   ├── UserService.java
 │   │   │   │   ├── FilterService.java
 │   │   │   │   ├── SoftDeleteService.java
-│   │   │   │   └── impl/
-│   │   │   │       ├── AuthServiceImpl.java
-│   │   │   │       ├── EventServiceImpl.java
-│   │   │   │       └── UserServiceImpl.java
-│   │   │   └── EventManagementApplication.java
+│   │   │   │   └── UserService.java
+│   │   │   ├── util/                   # Utility classes
+│   │   │   │   ├── DateUtils.java
+│   │   │   │   └── ValidationUtils.java
+│   │   │   └── EventManagementApplication.java # Main Spring Boot application class
 │   │   └── resources/
-│   │       ├── application.yml
-│   │       ├── application-dev.yml
-│   │       ├── application-prod.yml
-│   │       └── db/migration/           # Flyway migrations
-│   │           ├── V1__Create_users_table.sql
-│   │           ├── V2__Create_events_table.sql
-│   │           └── V3__Create_attendance_table.sql
+│   │       ├── application.yml
+│   │       ├── application-dev.yml
+│   │       ├── application-prod.yml
+│   │       └── db/migration/           # Flyway database migration scripts
+│   │           ├── V1__Create_users_table.sql
+│   │           ├── V2__Create_events_table.sql
+│   │           └── V3__Create_attendance_table.sql
 │   └── test/
-│       ├── java/com/eventmanagement/
-│       │   ├── config/                 # Test configurations
-│       │   │   ├── TestJpaAuditingConfig.java
-│       │   │   └── TestSecurityConfig.java
-│       │   ├── controller/             # Controller tests
-│       │   │   ├── AuthControllerTest.java
-│       │   │   ├── EventControllerTest.java
-│       │   │   └── UserControllerTest.java
-│       │   ├── integration/            # Integration tests
-│       │   │   └── EventManagementIntegrationTest.java
-│       │   ├── repository/             # Repository tests
-│       │   │   ├── UserRepositoryTest.java
-│       │   │   ├── EventRepositoryTest.java
-│       │   │   └── AttendanceRepositoryTest.java
-│       │   └── service/                # Service tests
-│       │       ├── AuthServiceTest.java
-│       │       ├── EventServiceTest.java
-│       │       └── UserServiceTest.java
-│       └── resources/
-│           └── application-test.yml
-├── target/                             # Build output
-├── pom.xml                            # Maven configuration
-├── README.md                          # Project documentation
-└── .gitignore                         # Git ignore rules
+│       ├── java/com/eventmanagement/
+│       │   ├── config/                 # Test-specific configurations
+│       │   │   ├── BaseWebMvcTest.java
+│       │   │   ├── TestJpaAuditingConfig.java
+│       │   │   ├── TestJpaConfig.java
+│       │   │   ├── TestMethodSecurityConfig.java
+│       │   │   ├── TestSecurityBeans.java
+│       │   │   └── TestSecurityConfig.java
+│       │   ├── controller/             # Unit tests for controllers
+│       │   │   ├── AuthControllerTest.java
+│       │   │   ├── EventControllerTest.java
+│       │   │   └── UserControllerTest.java
+│       │   ├── integration/            # Integration tests
+│       │   │   └── EventManagementIntegrationTest.java
+│       │   ├── repository/             # Unit tests for repositories
+│       │   │   ├── AttendanceRepositoryTest.java
+│       │   │   ├── BaseRepositoryTest.java
+│       │   │   ├── EventRepositoryTest.java
+│       │   │   └── UserRepositoryTest.java
+│       │   ├── security/               # Unit tests for security components
+│       │   │   └── JwtTokenProviderTest.java
+│       │   └── service/                # Unit tests for services
+│       │       ├── AuthServiceTest.java
+│       │       ├── EventServiceTest.java
+│       │       ├── TestFilterService.java
+│       │       └── UserServiceTest.java
+│       │   └── util/                   # Unit tests for utility classes
+│       │       ├── DateUtilsTest.java
+│       │       └── ValidationUtilsTest.java
+│       ├── EventManagementApplicationTests.java # Main Spring Boot test class
+│       └── resources/
+│           └── application-test.yml    # Test-specific application properties
+├── target/                             # Build output directory
+├── pom.xml                             # Maven project configuration
+├── README.md                           # Project documentation
+└── .gitignore                          # Git ignore rules
 ```
 ![Screenshot from 2025-05-25 23-34-23](https://github.com/user-attachments/assets/9a269265-5513-4f30-80d6-af4c92edcaf0)
 
