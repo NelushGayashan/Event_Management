@@ -239,6 +239,7 @@ event-management-system/
 │   │   │   │   ├── EventService.java
 │   │   │   │   ├── UserService.java
 │   │   │   │   ├── FilterService.java
+│   │   │   │   ├── SoftDeleteService.java
 │   │   │   │   └── impl/
 │   │   │   │       ├── AuthServiceImpl.java
 │   │   │   │       ├── EventServiceImpl.java
